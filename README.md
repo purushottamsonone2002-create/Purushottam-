@@ -75,7 +75,7 @@ python -m http.server 8000
 ```
 
 ### 3. Access the App
-- Open http://localhost:8000 in your browser
+- Open in your browser
 - Login with any phone number (OTP: 1234)
 - Browse products and place orders
 
