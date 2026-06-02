@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Purushottam Creation – Temple Smart Ordering App</title>
+    <style>
+        :root {
+            --saffron: #FF6B00;
+            --saffron-light: #FFF5EC;
+            --red: #D32F2F;
+            --red-light: #FFEBEE;
+            --white: #FFFFFF;
+            --black: #111111;
+            --gray-bg: #F9FAFB;
+            --gray-border: #E5E7EB;
+            --text-dark: #1F2937;
+            --text-muted: #6B7280;
+            --green: #057857;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, sans-serif; }
+        body { background-color: #F3F4F6; color: var(--text-dark); display: flex; justify-content: center; min-height: 100vh; }
+
+        .app-shell { width: 100%; max-width: 450px; background: var(--white); min-height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .view-container { flex-grow: 1; padding: 16px; padding-bottom: 90px; display: none; overflow-y: auto; }
+        .view-container.active { display: block; }
+
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--white); border-top: 1px solid var(--gray-border); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 11px; font-weight: 700; cursor: pointer; background: none; border: none; width: 25%; }
+        .nav-tab.active { color: var(--saffron); }
+        .nav-tab-icon { font-size: 22px; margin-bottom: 2px; }
+
+        .app-header { background: linear-gradient(135deg, var(--saffron), #FF4D00); color: var(--white); padding: 24px 16px; border-radius: 0 0 24px 24px; margin: -16px -16px 16px -16px; }
+        .brand-title { font-size: 24px; font-weight: 800; }
+        .brand-subtitle { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+
+        .spec-box { background: #EEF4FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 12px; margin: 16px 0; }
+        .spec-box h5 { color: #1D4ED8; font-size: 13px; font-weight: 700; }
+        .spec-box p { font-size: 12px; color: #1E40AF; margin-top: 2px; }
+
+        .selection-row { background: var(--white); border: 1px solid var(--gray-border); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; margin-bottom: 12px; }
+        .row-icon { width: 48px; height: 48px; background: var(--saffron-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .row-details h4 { font-size: 15px; font-weight: 700; }
+        .row-details p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .circle-group { display: flex; gap: 12px; margin: 8px 0 16px 0; }
+        .color-circle { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--white); box-shadow: 0 0 0 1px #D1D5DB; cursor: pointer; }
+        .color-circle.active { box-shadow: 0 0 0 2px var(--saffron); }
+        
+        .size-group { display: flex; gap: 10px; margin: 8px 0 16px 0; }
+        .size-chip { padding: 10px 18px; border: 1px solid var(--gray-border); border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; background: var(--white); }
+        .size-chip.active { background: var(--saffron); color: var(--white); border-color: var(--saffron); }
+
+        .form-input { width: 100%; padding: 14px; border: 1px solid var(--gray-border); border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none; }
+        .custom-upload-box { border: 1px dashed var(--saffron); background: var(--saffron-light); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px; cursor: pointer; font-size: 13px; font-weight: bold; color: var(--saffron); }
+
+        .btn-action { width: 100%; background: var(--black); color: var(--saffron); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 12px; }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .ticket-box { background: linear-gradient(135deg, var(--saffron), #E65100); color: var(--white); border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 8px 20px rgba(255,107,0,0.2); margin-bottom: 20px; }
+        .ticket-status-pill { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; margin-bottom: 12px; }
+        .ticket-token { font-size: 42px; font-weight: 900; margin-bottom: 16px; }
+        .ticket-grid { display: flex; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 16px; }
+        .ticket-col { flex: 1; text-align: center; }
+        .ticket-col:not(:last-child) { border-right: 1px dashed rgba(255,255,255,0.3); }
+        .ticket-val { font-size: 18px; font-weight: 800; }
+        .ticket-lbl { font-size: 10px; opacity: 0.8; margin-top: 2px; text-transform: uppercase; }
+
+        .admin-metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .metric-card { background: var(--white); border: 1px solid var(--gray-border); border-radius: 12px; padding: 14px; }
+        .metric-card h6 { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+        .metric-card p { font-size: 20px; font-weight: 800; margin-top: 4px; }
+
+        .queue-item { background: #F9FAFB; border: 1px solid #EEE; padding: 12px; border-radius: 8px; font-size: 12px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- VIEW 1: AUTHENTICATION FORM -->
+    <div id="view-auth" class="view-container active" style="padding-top: 40px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 50px;">🚩</span>
+            <h2 style="font-size: 24px; font-weight: 800; margin-top: 8px;">Purushottam Creation</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Jam Sawali Mandir QR Ordering Engine</p>
+        </div>
+        <div style="background: var(--gray-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--gray-border);">
+            <input type="tel" id="auth-phone" class="form-input" placeholder="Enter Mobile Number">
+            <button class="btn-action" onclick="requestOtpNode()" style="margin-top: 0; margin-bottom: 12px;">Get Dynamic Verification OTP</button>
+            <div id="otp-area" style="display: none;">
+                <input type="number" id="auth-otp" class="form-input" placeholder="Enter 4-Digit OTP (Use 1234)">
+                <button class="btn-action" onclick="authenticateUserSession()" style="background: var(--saffron); color: white; margin-top: 0;">Verify & Access Catalog</button>
+            </div>
+            <div style="text-align: center; margin: 12px 0; color: var(--text-muted); font-size: 12px; font-weight: bold;">OR</div>
+            <button class="btn-action" onclick="authenticateUserSession()" style="background: white; color: #333; border: 1px solid #CCC; box-shadow: none; margin-top: 0;">🌐 Sign-In with Google Workspace</button>
+        </div>
+    </div>
+
+    <!-- VIEW 2: PRODUCT CATALOG INTERFACE -->
+    <div id="view-home" class="view-container">
+        <div class="app-header">
+            <div class="brand-title">Purushottam Creation</div>
+            <div class="brand-subtitle">📍 Jam Sawali Hanuman Mandir | Token System</div>
+        </div>
+        <div class="spec-box">
+            <h5>Product Specifications</h5>
+            <p>Fabric: Polyester<br>Printing Technology: Sublimation Only</p>
+        </div>
+        <h3 style="font-size: 16px; margin-bottom: 12px; text-transform: uppercase;">Select Item Style</h3>
+        <div class="selection-row" onclick="loadProductConfigurator('Blank T-Shirt', 99, 2, '👕')">
+            <div class="row-icon">👕</div>
+            <div class="row-details"><h4>Blank T-Shirt</h4><p>Base Plain Polyester • ₹99 • 2 Mins</p></div>
+        </div>
+        <div class="selection-row" onclick="loadProductConfigurator('Temple Design (Single Side)', 149, 5, '🔱')">
+            <div class="row-icon">🔱</div>
+            <div class="row-details"><h4>Temple Design (Single Side)</h4><p>Front Classical Print • ₹149 • 5 Mins</p></div>
+        </div>
+        <div class="selection-row" onclick="loadProductConfigurator('Temple Design (Front + Back)', 199, 5, '🚩')">
+            <div class="row-icon">🚩</div>
+            <div class="row-details"><h4>Temple Design (Front + Back)</h4><p>Dual-Sided Holy Art • ₹199 • 5 Mins</p></div>
+        </div>
+        <div class="selection-row" onclick="loadProductConfigurator('Custom Design (Single Side)', 199, 10, '📸')">
+            <div class="row-icon">📸</div>
+            <div class="row-details"><h4>Custom Design (Single Side)</h4><p>Upload Photo/Custom Text • ₹199 • 10 Mins</p></div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: CONFIGURATOR & DISTANCE VALIDATOR -->
+    <div id="view-config" class="view-container">
+        <h3 id="product-display-title" style="font-size: 18px; font-weight: 800; margin-bottom: 16px;">Configure Item</h3>
+        
+        <span style="font-size: 13px; font-weight: 700; color: var(--black);">Select Color</span>
+        <div class="circle-group">
+            <div class="color-circle active" style="background: #FF6B00;" onclick="setColorValue(this, 'Saffron')"></div>
+            <div class="color-circle" style="background: #FFFFFF;" onclick="setColorValue(this, 'White')"></div>
+            <div class="color-circle" style="background: #D32F2F;" onclick="setColorValue(this, 'Red')"></div>
+        </div>
+
+        <span style="font-size: 13px; font-weight: 700; color: var(--black);">Select Size</span>
+        <div class="size-group">
+            <div class="size-chip active" onclick="setSizeValue(this, 'M')">M</div>
+            <div class="size-chip" onclick="setSizeValue(this, 'L')">L</div>
+            <div class="size-chip" onclick="setSizeValue(this, 'XL')">XL</div>
+        </div>
+
+        <div id="custom-assets-area" style="display: none; margin-top: 12px;">
+            <div class="custom-upload-box" onclick="alert('Device File Upload Matrix Triggered safely.')">📂 Upload Photo / Logo Asset</div>
+            <input type="text" id="custom-name-string" class="form-input" placeholder="Custom Name / Text Line">
+        </div>
+
+        <button class="btn-action" onclick="calculateGpsDistance()" style="background: white; color: black; border: 1px solid var(--gray-border); box-shadow: none; margin-top: 0;">🌐 Validate Location Distance (0-80 KM Rule)</button>
+        <p id="distance-tracker-feedback" style="font-size: 12px; color: var(--text-muted); margin-top: 6px; font-weight: 600;"></p>
+
+        <div id="shipping-container" style="display: none; margin-top: 12px;">
+            <select id="shipping-selection" class="form-input" style="background: white; font-weight: bold;"></select>
+            <select id="payment-selection" class="form-input" style="background: white; font-weight: bold;">
+                <option value="UPI">UPI Digital Payment Interface</option>
+                <option value="Cash" id="cash-payment-node">Cash on Pickup Counter</option>
+            </select>
+        </div>
+
+        <button class="btn-action" id="final-submit-btn" onclick="commitOrderToQueue()" disabled>Lock Configurations & Place Order</button>
+    </div>
+
+    <!-- VIEW 4: LIVE RE-ACTIVE TRACKING TICKET -->
+    <div id="view-tracking" class="view-container">
+        <h3 style="font-size: 16px; margin-bottom: 16px; text-transform: uppercase;">Live Ticket Dashboard</h3>
+        <div class="ticket-box">
+            <div class="ticket-status-pill" id="live-status-label">Waiting in Queue</div>
+            <div class="ticket-token" id="live-token-label">#HM1001</div>
+            <div class="ticket-grid">
+                <div class="ticket-col">
+                    <div class="ticket-val" id="live-ahead-label">--</div>
+                    <div class="ticket-lbl">Orders Ahead</div>
+                </div>
+                <div class="ticket-col">
+                    <div class="ticket-val" id="live-wait-label">-- Mins</div>
+                    <div class="ticket-lbl">Est. Wait Time</div>
+                </div>
+            </div>
+        </div>
+        <div style="background: #F9FAFB; border: 1px solid #EEE; padding: 16px; text-align: center; border-radius: 12px;">
+            <div style="width: 120px; height: 120px; background: #222; margin: 0 auto; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; border-radius: 6px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">[PICKUP QR]</div>
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-top: 8px;">SHOW THIS CODE AT COUNTER</span>
+        </div>
+    </div>
+
+    <!-- VIEW 5: ADMIN BACKEND CONTROL OVERSEER -->
+    <div id="view-admin" class="view-container">
+        <h3 style="font-size: 16px; margin-bottom: 16px; text-transform: uppercase;">Admin Control Panel</h3>
+        <div class="admin-metric-grid">
+            <div class="metric-card"><h6>Total Revenue</h6><p id="adm-rev-val">₹0</p></div>
+            <div class="metric-card"><h6>Active Orders</h6><p id="adm-count-val">0</p></div>
+        </div>
+        <h4 style="font-size: 14px; margin-bottom: 8px; text-transform: uppercase;">Active Production Queue</h4>
+        <div id="admin-queue-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+
+    <!-- GLOBAL NAVIGATION TABBAR -->
+    <div class="bottom-nav" id="sticky-app-nav" style="display: none;">
+        <button class="nav-tab active" onclick="routeTo('view-home', this)"><span class="nav-tab-icon">🏠</span>Home</button>
+        <button class="nav-tab" onclick="routeTo('view-config', this)"><span class="nav-tab-icon">⚙️</span>Configure</button>
+        <button class="nav-tab" onclick="routeTo('view-tracking', this)"><span class="nav-tab-icon">🎫</span>Token</button>
+        <button class="nav-tab" onclick="routeTo('view-admin', this)"><span class="nav-tab-icon">📊</span>Admin</button>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
